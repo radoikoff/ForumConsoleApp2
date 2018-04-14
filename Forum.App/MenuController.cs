@@ -21,7 +21,7 @@
             this.viewEngine = viewEngine;
             this.session = session;
             this.commandFactory = commandFactory;
-            this.RenderCurrentView();
+            this.InitializeSession();
         }
 
         private string Username { get; set; }
