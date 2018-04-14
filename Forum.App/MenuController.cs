@@ -1,79 +1,77 @@
 ﻿namespace Forum.App
 {
-	using System;
+    using System;
 
-	using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.DependencyInjection;
 
-	using Contracts;
-	using Menus;
+    using Contracts;
+    using Menus;
 
-	internal class MenuController : IMainController
-	{
-		private IServiceProvider serviceProvider;
+    internal class MenuController : IMainController
+    {
+        private IServiceProvider serviceProvider;
 
-		private IForumViewEngine viewEngine;
-		private ISession session;
-		private ICommandFactory commandFactory;
+        private IForumViewEngine viewEngine;
+        private ISession session;
+        private ICommandFactory commandFactory;
 
-		public MenuController(ILabelFactory labelFactory, IForumViewEngine viewEngine)
-		{
-			this.viewEngine = viewEngine;
+        public MenuController(IServiceProvider serviceProvider, IForumViewEngine viewEngine, ISession session, ICommandFactory commandFactory)
+        {
+            this.serviceProvider = serviceProvider;
+            this.viewEngine = viewEngine;
+            this.session = session;
+            this.commandFactory = commandFactory;
+            this.RenderCurrentView();
+        }
 
-			this.CurrentMenu = new MainMenu(null, labelFactory, null);
-			this.RenderCurrentView();
-		}
+        private string Username { get; set; }
 
-		private string Username { get; set; }
+        private IMenu CurrentMenu => this.session.CurrentMenu;
 
-		//Replace CurrentMenu with this after implementing Session
-		//private IMenu CurrentMenu => this.session.CurrentMenu;
+        private void InitializeSession()
+        {
+            this.session.PushView(new MainMenu(this.session,
+                this.serviceProvider.GetService<ILabelFactory>(),
+                this.serviceProvider.GetService<ICommandFactory>()));
 
-		private IMenu CurrentMenu { get; }
+            this.RenderCurrentView();
+        }
 
-		private void InitializeSession()
-		{
-			this.session.PushView(new MainMenu(this.session,
-				this.serviceProvider.GetService<ILabelFactory>(),
-				this.serviceProvider.GetService<ICommandFactory>()));
+        private void RenderCurrentView()
+        {
+            this.viewEngine.RenderMenu(this.CurrentMenu);
+        }
 
-			this.RenderCurrentView();
-		}
+        public void MarkOption()
+        {
+            this.viewEngine.Mark(this.CurrentMenu.CurrentOption);
+        }
 
-		private void RenderCurrentView()
-		{
-			this.viewEngine.RenderMenu(this.CurrentMenu);
-		}
+        public void UnmarkOption()
+        {
+            this.viewEngine.Mark(this.CurrentMenu.CurrentOption, false);
+        }
 
-		public void MarkOption()
-		{
-			this.viewEngine.Mark(this.CurrentMenu.CurrentOption);
-		}
+        public void NextOption()
+        {
+            this.CurrentMenu.NextOption();
+        }
 
-		public void UnmarkOption()
-		{
-			this.viewEngine.Mark(this.CurrentMenu.CurrentOption, false);
-		}
+        public void PreviousOption()
+        {
+            this.CurrentMenu.PreviousOption();
+        }
 
-		public void NextOption()
-		{
-			this.CurrentMenu.NextOption();
-		}
+        public void Back()
+        {
+            this.session.Back();
+            RenderCurrentView();
+        }
 
-		public void PreviousOption()
-		{
-			this.CurrentMenu.PreviousOption();
-		}
-
-		public void Back()
-		{
-			this.session.Back();
-			RenderCurrentView();
-		}
-
-		public void Execute()
-		{
-			this.session.PushView(this.CurrentMenu.ExecuteCommand());
-			this.RenderCurrentView();
-		}
-	}
+        public void Execute()
+        {
+            this.session.PushView(this.CurrentMenu.ExecuteCommand());
+            this.RenderCurrentView();
+        }
+    }
 }

@@ -1,41 +1,64 @@
 ﻿namespace Forum.App.Models
 {
-	using Contracts;
-	using DataModels;
+    using Contracts;
+    using DataModels;
+    using System.Collections.Generic;
 
-	public class Session : ISession
-	{
-		public string Username => throw new System.NotImplementedException();
+    public class Session : ISession
+    {
+        private User user;
+        private Stack<IMenu> history;
 
-		public int UserId => throw new System.NotImplementedException();
+        public Session()
+        {
+            this.history = new Stack<IMenu>();
+        }
 
-		public bool IsLoggedIn => throw new System.NotImplementedException();
+        public string Username => this.user?.Username;
 
-		public IMenu CurrentMenu => throw new System.NotImplementedException();
+        public int UserId => this.user?.Id ?? 0;
 
-		public IMenu Back()
-		{
-			throw new System.NotImplementedException();
-		}
+        public bool IsLoggedIn => this.user != null;
 
-		public void LogIn(User user)
-		{
-			throw new System.NotImplementedException();
-		}
+        public IMenu CurrentMenu => this.history.Peek();
 
-		public void LogOut()
-		{
-			throw new System.NotImplementedException();
-		}
+        public IMenu Back()
+        {
+            if (this.history.Count > 1)
+            {
+                this.history.Pop();
+            }
 
-		public bool PushView(IMenu view)
-		{
-			throw new System.NotImplementedException();
-		}
+            IMenu previousMenu = this.history.Peek();
+            previousMenu.Open();
 
-		public void Reset()
-		{
-			throw new System.NotImplementedException();
-		}
-	}
+            return previousMenu;
+        }
+
+        public void LogIn(User user)
+        {
+            this.user = user;
+        }
+
+        public void LogOut()
+        {
+            this.user = null;
+        }
+
+        public bool PushView(IMenu view)
+        {
+            if (this.history.Count == 0 || this.history.Peek() != view)
+            {
+                this.history.Push(view);
+                return true;
+            }
+            return false;
+        }
+
+        public void Reset()
+        {
+            this.history = new Stack<IMenu>();
+            this.user = null;
+        }
+    }
 }

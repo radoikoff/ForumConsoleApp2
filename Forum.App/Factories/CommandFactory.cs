@@ -1,12 +1,44 @@
 ﻿namespace Forum.App.Factories
 {
-	using Contracts;
+    using Contracts;
+    using System;
+    using System.Linq;
+    using System.Reflection;
 
-	public class CommandFactory : ICommandFactory
-	{
-		public ICommand CreateCommand(string commandName)
-		{
-			throw new System.NotImplementedException();
-		}
-	}
+    public class CommandFactory : ICommandFactory
+    {
+        private IServiceProvider serviseProvider;
+
+        public CommandFactory(IServiceProvider serviseProvider)
+        {
+            this.serviseProvider = serviseProvider;
+        }
+
+        public ICommand CreateCommand(string commandName)
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            Type commandType = assembly.GetTypes().FirstOrDefault(t => t.Name == commandName + "Command");
+
+            if (commandType == null)
+            {
+                throw new InvalidOperationException("Command not found!");
+            }
+
+            if (!typeof(ICommand).IsAssignableFrom(commandType))
+            {
+                throw new InvalidOperationException($"{commandType} is not a command!");
+            }
+
+            ParameterInfo[] ctorParams = commandType.GetConstructors().First().GetParameters();
+            object[] args = new object[ctorParams.Length];
+
+            for (int i = 0; i < args.Length; i++)
+            {
+                args[i] = this.serviseProvider.GetService(ctorParams[i].ParameterType);
+            }
+
+            ICommand command = (ICommand)Activator.CreateInstance(commandType, args);
+            return command;
+        }
+    }
 }
