@@ -38,12 +38,18 @@
 
         public string GetCategoryName(int categoryId)
         {
-            throw new NotImplementedException();
+            string categoryName = this.forumData.Categories.FirstOrDefault(c => c.Id == categoryId)?.Name;
+            if (categoryName == null)
+            {
+                throw new ArgumentException($"Category with {categoryId} not found!");
+            }
+            return categoryName;
         }
 
         public IEnumerable<IPostInfoViewModel> GetCategoryPostsInfo(int categoryId)
         {
-            throw new NotImplementedException();
+            IEnumerable<IPostInfoViewModel> categoryPostInfo = this.forumData.Posts.Where(p => p.CategoryId == categoryId).Select(p => new PostInfoViewModel(p.Id, p.Title, p.Replies.Count));
+            return categoryPostInfo;
         }
 
         public IPostViewModel GetPostViewModel(int postId)
