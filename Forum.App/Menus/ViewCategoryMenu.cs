@@ -108,7 +108,7 @@
             if (this.currentIndex > 0 && this.currentIndex < 10)
             {
                 postId = this.posts[actualIndex].Id.ToString();
-                command = this.commandFactory.CreateCommand("ViewPostMenuCommand");
+                command = this.commandFactory.CreateCommand("ViewPostMenu");
             }
             else
             {

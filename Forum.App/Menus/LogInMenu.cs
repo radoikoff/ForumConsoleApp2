@@ -19,6 +19,8 @@
             this.labelFactory = labelFactory;
             this.forumReader = forumReader;
             this.commandFactory = commandFactory;
+
+            Open();
         }
 
 

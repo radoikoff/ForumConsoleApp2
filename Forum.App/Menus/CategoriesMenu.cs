@@ -105,7 +105,7 @@
 
             if (this.currentIndex > 0 && this.currentIndex < 10)
             {
-                command = this.commandFactory.CreateCommand("ViewCategoryMenuCommand");
+                command = this.commandFactory.CreateCommand("ViewCategoryMenu");
             }
             else
             {
