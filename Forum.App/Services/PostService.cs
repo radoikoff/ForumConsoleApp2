@@ -23,7 +23,44 @@
 
         public int AddPost(int userId, string postTitle, string postCategory, string postContent)
         {
-            throw new NotImplementedException();
+            bool emptyCategory = string.IsNullOrWhiteSpace(postCategory);
+            bool emptyTitle = string.IsNullOrWhiteSpace(postTitle);
+            bool emptyContent = string.IsNullOrWhiteSpace(postContent);
+
+            if (emptyCategory || emptyTitle || emptyContent)
+            {
+                throw new ArgumentException("All fields must be filled!");
+            }
+
+            Category category = this.EnsureCategory(postCategory);
+
+            int postId = forumData.Posts.LastOrDefault()?.Id + 1 ?? 1;
+
+            User author = this.userService.GetUserById(userId);
+
+            Post post = new Post(postId, postTitle, postContent, category.Id, userId, new List<int>());
+
+            this.forumData.Posts.Add(post);
+            author.Posts.Add(post.Id);
+            category.Posts.Add(post.Id);
+            this.forumData.SaveChanges();
+
+            return post.Id;
+        }
+
+        private Category EnsureCategory(string categoryName)
+        {
+            Category category = this.forumData.Categories.FirstOrDefault(c => c.Name == categoryName);
+            if (category == null)
+            {
+                int categoryId = forumData.Categories.LastOrDefault()?.Id + 1 ?? 1;
+
+                category = new Category(categoryId, categoryName, new List<int>());
+
+                this.forumData.Categories.Add(category);
+                this.forumData.SaveChanges();
+            }
+            return category;
         }
 
         public void AddReplyToPost(int postId, string replyContents, int userId)
