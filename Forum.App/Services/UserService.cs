@@ -22,12 +22,14 @@
 
         public User GetUserById(int userId)
         {
-            throw new NotImplementedException();
+            User user = this.forumData.Users.FirstOrDefault(u => u.Id == userId);
+            return user;
         }
 
         public string GetUserName(int userId)
         {
-            throw new NotImplementedException();
+            string userName = GetUserById(userId)?.Username;
+            return userName;
         }
 
         public bool TryLogInUser(string username, string password)

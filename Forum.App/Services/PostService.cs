@@ -7,6 +7,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using Forum.DataModels;
 
     public class PostService : IPostService
     {
@@ -54,7 +55,18 @@
 
         public IPostViewModel GetPostViewModel(int postId)
         {
-            throw new NotImplementedException();
+            Post post = this.forumData.Posts.FirstOrDefault(p => p.Id == postId);
+            IPostViewModel postView = new PostViewModel(post.Title, this.userService.GetUserName(post.AuthorId), post.Content, this.GetPostReplies(postId));
+            return postView;
+        }
+
+        public IEnumerable<IReplyViewModel> GetPostReplies(int postId)
+        {
+            IEnumerable<IReplyViewModel> replies = this.forumData.Replies
+                .Where(r => r.PostId == postId)
+                .Select(r => new ReplyViewModel(this.userService.GetUserName(r.AuthorId), r.Content));
+
+            return replies;
         }
     }
 }

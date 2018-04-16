@@ -11,17 +11,27 @@
 		private const int leftOffset = 18;
 		private const int topOffset = 7;
 
-		private ILabelFactory labelFactory;
+        private IPostService postService;
+        private ILabelFactory labelFactory;
 		private ISession session;
-
-		private IForumViewEngine viewEngine;
+        private ICommandFactory commandFactory;
+        private IForumViewEngine viewEngine;
 		
 		private int postId;
 		private IPostViewModel post;
 
-		//TODO: Inject Dependencies
+        public ViewPostMenu(IPostService postService, ILabelFactory labelFactory, ISession session, ICommandFactory commandFactory, IForumViewEngine viewEngine)
+        {
+            this.postService = postService;
+            this.labelFactory = labelFactory;
+            this.session = session;
+            this.commandFactory = commandFactory;
+            this.viewEngine = viewEngine;
+        }
 
-		public override void Open()
+
+
+        public override void Open()
 		{		
 			this.LoadPost();
 			this.ExtendBuffer();
@@ -99,18 +109,25 @@
 
 		public void SetId(int id)
 		{
-			throw new System.NotImplementedException();
+            this.postId = id;
+            this.Open();
 		}
 
 		private void LoadPost()
 		{
-			throw new System.NotImplementedException();
+            this.post = this.postService.GetPostViewModel(this.postId);
 		}
 
 		public override IMenu ExecuteCommand()
 		{
-			throw new System.NotImplementedException();
-		}
+            string commandName = string.Join("", this.CurrentOption.Text.Split());
+            ICommand command = this.commandFactory.CreateCommand(commandName);
+            IMenu view = command.Execute(this.postId.ToString());
+
+            this.viewEngine.ResetBuffer();
+
+            return view;
+        }
 
 		private void ExtendBuffer()
 		{
