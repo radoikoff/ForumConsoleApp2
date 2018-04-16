@@ -71,7 +71,7 @@
 
         public override IMenu ExecuteCommand()
         {
-            string commandName = string.Join("", this.CurrentOption.Text.Split() + "Menu");
+            string commandName = string.Join("", (this.CurrentOption.Text + "Menu").Split());
             ICommand command = commandFactory.CreateCommand(commandName);
             IMenu view = command.Execute();
             return view;

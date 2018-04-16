@@ -31,6 +31,7 @@
             services.AddSingleton<ICommandFactory, CommandFactory>();
             services.AddSingleton<ForumData>();
             services.AddTransient<IPostService, PostService>();
+            services.AddTransient<IUserService, UserService>();
             services.AddSingleton<ISession, Session>();
             services.AddSingleton<IForumViewEngine, ForumViewEngine>();
             services.AddSingleton<IMainController, MenuController>();
