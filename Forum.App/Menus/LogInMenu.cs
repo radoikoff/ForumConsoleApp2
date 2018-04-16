@@ -1,29 +1,40 @@
 ﻿namespace Forum.App.Menus
 {
-	using Models;
+    using Models;
     using Contracts;
+    using System;
 
     public class LogInMenu : Menu
     {
-		private const string errorMessage = "Invalid username or password!";
+        private const string errorMessage = "Invalid username or password!";
 
-		private bool error;
+        private bool error;
 
-		private ILabelFactory labelFactory;
+        private ILabelFactory labelFactory;
+        private IForumReader forumReader;
+        private ICommandFactory commandFactory;
 
-		//TODO: Inject Dependencies
-		
-		private string UsernameInput => this.Buttons[0].Text.TrimStart();
+        public LogInMenu(ILabelFactory labelFactory, IForumReader forumReader, ICommandFactory commandFactory)
+        {
+            this.labelFactory = labelFactory;
+            this.forumReader = forumReader;
+            this.commandFactory = commandFactory;
+        }
 
-		private string PasswordInput => this.Buttons[1].Text.TrimStart();
 
-		protected override void InitializeStaticLabels(Position consoleCenter)
+        private string UsernameInput => this.Buttons[0].Text.TrimStart();
+
+        private string PasswordInput => this.Buttons[1].Text.TrimStart();
+
+        private string ErrorMessage { get; set; }
+
+        protected override void InitializeStaticLabels(Position consoleCenter)
         {
             string[] labelContents = new string[] { errorMessage, "Name:", "Password:" };
 
             Position[] labelPositions = new Position[]
             {
-				new Position(consoleCenter.Left - errorMessage.Length / 2, consoleCenter.Top - 13),   // Error: 
+                new Position(consoleCenter.Left - errorMessage.Length / 2, consoleCenter.Top - 13),   // Error: 
                 new Position(consoleCenter.Left - 16, consoleCenter.Top - 10),   // Name:
                 new Position(consoleCenter.Left - 16, consoleCenter.Top - 8),    // Password:
             };
@@ -38,7 +49,7 @@
             }
         }
 
-		protected override void InitializeButtons(Position consoleCenter)
+        protected override void InitializeButtons(Position consoleCenter)
         {
             string[] buttonContents = new string[]
             {
@@ -57,15 +68,36 @@
 
             for (int i = 0; i < this.Buttons.Length; i++)
             {
-				string buttonContent = buttonContents[i];
-				bool isField = string.IsNullOrWhiteSpace(buttonContent);
-				this.Buttons[i] = this.labelFactory.CreateButton(buttonContent, buttonPositions[i], false, isField);
+                string buttonContent = buttonContents[i];
+                bool isField = string.IsNullOrWhiteSpace(buttonContent);
+                this.Buttons[i] = this.labelFactory.CreateButton(buttonContent, buttonPositions[i], false, isField);
             }
         }
 
-		public override IMenu ExecuteCommand()
-		{
-			throw new System.NotImplementedException();
-		}
-	}
+        public override IMenu ExecuteCommand()
+        {
+            if (this.CurrentOption.IsField)
+            {
+                string fieldInput = " " + this.forumReader.ReadLine(this.CurrentOption.Position.Left + 1, this.CurrentOption.Position.Top);
+                this.Buttons[this.currentIndex] = this.labelFactory.CreateButton(fieldInput, this.CurrentOption.Position, this.CurrentOption.IsHidden, this.CurrentOption.IsField);
+                return this;
+            }
+            else
+            {
+                try
+                {
+                    ICommand command = this.commandFactory.CreateCommand(string.Join("", this.CurrentOption.Text.Split()));
+                    IMenu view = command.Execute(this.UsernameInput, this.PasswordInput);
+                    return view;
+                }
+                catch (Exception ex)
+                {
+                    this.error = true;
+                    this.ErrorMessage = ex.Message;
+                    this.Open();
+                    return this;
+                }
+            }
+        }
+    }
 }
