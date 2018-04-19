@@ -15,15 +15,34 @@
 		private ILabelFactory labelFactory;
 		private ITextAreaFactory textAreaFactory;
 		private IForumReader reader;
+        private ICommandFactory commandFactory;
+        private IPostService postService;
 
-		private bool error;
+
+        private bool error;
+        private int postId;
 		private IPostViewModel post;
 
-		//TODO: Inject Dependencies
+        public AddReplyMenu(ILabelFactory labelFactory, ITextAreaFactory textAreaFactory, IPostService postService, IForumReader reader, ICommandFactory commandFactory)
+        {
+            this.labelFactory = labelFactory;
+            this.textAreaFactory = textAreaFactory;
+            this.postService = postService;
+            this.reader = reader;
+            this.commandFactory = commandFactory;
+        }
 
-		public ITextInputArea TextArea { get; private set; }
 
-		protected override void InitializeStaticLabels(Position consoleCenter)
+        public ITextInputArea TextArea { get; private set; }
+
+        public override void Open()
+        {
+            this.LoadPost();
+            this.InitializeTextArea();
+            base.Open();
+        }
+
+        protected override void InitializeStaticLabels(Position consoleCenter)
 		{
 			Position errorPosition = 
 				new Position(consoleCenter.Left - this.post.Title.Length / 2, consoleCenter.Top - 12);
@@ -77,12 +96,39 @@
 
 		public void SetId(int id)
 		{
-			throw new System.NotImplementedException();
-		}
+            this.postId = id;
+            this.Open();
+        }
 
-		public override IMenu ExecuteCommand()
+        private void LoadPost()
+        {
+            this.post = this.postService.GetPostViewModel(this.postId);
+        }
+
+        public override IMenu ExecuteCommand()
 		{
-			throw new System.NotImplementedException();
-		}
+            if (this.CurrentOption.IsField)
+            {
+                string fieldInput = " " + this.reader.ReadLine(this.CurrentOption.Position.Left + 1, this.CurrentOption.Position.Top);
+                this.Buttons[this.currentIndex] = this.labelFactory.CreateButton(fieldInput, this.CurrentOption.Position, this.CurrentOption.IsHidden, this.CurrentOption.IsField);
+                return this;
+            }
+            else
+            {
+                try
+                {
+                    string commandName = string.Join("", this.CurrentOption.Text.Split());
+                    ICommand command = this.commandFactory.CreateCommand(commandName);
+                    IMenu view = command.Execute(this.postId.ToString(), this.TextArea.Text);
+                    return view;
+                }
+                catch
+                {
+                    this.error = true;
+                    this.InitializeStaticLabels(Position.ConsoleCenter());
+                    return this;
+                }
+            }
+        }
 	}
 }

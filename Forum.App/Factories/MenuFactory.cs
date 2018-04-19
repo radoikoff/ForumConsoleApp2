@@ -9,7 +9,6 @@
 
     public class MenuFactory : IMenuFactory
     {
-        const string MenuSuffix = "Menu";
 
         private IServiceProvider serviseProvider;
 
@@ -21,7 +20,7 @@
         public IMenu CreateMenu(string menuName)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
-            Type menuType = assembly.GetTypes().FirstOrDefault(t => t.Name == menuName); //+ MenuSuffix);
+            Type menuType = assembly.GetTypes().FirstOrDefault(t => t.Name == menuName);
 
             if (menuType == null)
             {

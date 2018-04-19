@@ -65,7 +65,23 @@
 
         public void AddReplyToPost(int postId, string replyContents, int userId)
         {
-            throw new NotImplementedException();
+            bool emptyContent = string.IsNullOrWhiteSpace(replyContents);
+
+            if (emptyContent)
+            {
+                throw new ArgumentException("Reply content cannot be empty!");
+            }
+
+            int replyId = forumData.Replies.LastOrDefault()?.Id + 1 ?? 1;
+
+            Post post = this.forumData.Posts.FirstOrDefault(p => p.Id == postId);
+
+            Reply reply = new Reply(replyId, replyContents, userId, postId);
+
+            this.forumData.Replies.Add(reply);
+            post.Replies.Add(replyId);
+            this.forumData.SaveChanges();
+
         }
 
         public IEnumerable<ICategoryInfoViewModel> GetAllCategories()
