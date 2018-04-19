@@ -13,5 +13,6 @@
 		IPostViewModel GetPostViewModel(int postId);
 		int AddPost(int userId, string postTitle, string postCategory, string postContent);
 		void AddReplyToPost(int postId, string replyContents, int userId);
-	}
+        void UpdatePost(int postId, int userId, string postContent);
+    }
 }

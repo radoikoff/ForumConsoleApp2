@@ -121,5 +121,31 @@
 
             return replies;
         }
+
+        public void UpdatePost(int postId, int authorId, string postContent)
+        {
+            bool emptyContent = string.IsNullOrWhiteSpace(postContent);
+
+            if (emptyContent)
+            {
+                throw new ArgumentException("Post content cannot be empty!");
+            }
+
+            Post post = this.forumData.Posts.FirstOrDefault(p => p.Id == postId);
+
+            if (post == null)
+            {
+                throw new ArgumentException($"Post with Id: {postId} does not exisit!");
+            }
+
+            if (post.AuthorId != authorId)
+            {
+                throw new ArgumentException($"Post Id: {postId} cannot be editied by autor Id {authorId}!");
+            }
+
+            post.Content = postContent;
+
+            this.forumData.SaveChanges();
+        }
     }
 }

@@ -99,13 +99,15 @@
 
 		protected override void InitializeButtons(Position consoleCenter)
 		{
-			this.Buttons = new IButton[2];
+			this.Buttons = new IButton[3];
 
 			this.Buttons[0] = this.labelFactory.CreateButton("Back",
 				new Position(consoleCenter.Left + 15, consoleCenter.Top - 3));
 			this.Buttons[1] = this.labelFactory.CreateButton("Add Reply",
 				new Position(consoleCenter.Left + 10, consoleCenter.Top - 4), !this.session.IsLoggedIn);
-		}
+            this.Buttons[2] = this.labelFactory.CreateButton("Edit Post",
+                new Position(consoleCenter.Left + 10, consoleCenter.Top - 5), !(this.session.IsLoggedIn && this.session.Username == this.post.Author));
+        }
 
 		public void SetId(int id)
 		{
